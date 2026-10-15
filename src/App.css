@@ -66,7 +66,14 @@ h1 {
 }
 
 .gate-body .lede {
-  font-size: 15px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  line-height: 1.7;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  max-width: 320px;
 }
 
 .logo {
@@ -142,31 +149,31 @@ h1 {
 
 /* Header & controls */
 .deck-header {
-  padding: 18px 18px 14px;
+  padding: 26px 22px 24px;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 16px;
   border-bottom: 4px solid #ffffff;
   background: #27272a;
 }
 
 .brand-title {
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: -0.4px;
   text-transform: uppercase;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: #ffffff;
 }
 
 .brand-logo {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
   background: #ffffff;
   object-fit: contain;
 }
@@ -246,6 +253,10 @@ h1 {
   box-shadow: inset 0 0 0 2px #000000;
 }
 
+.segmented-control.minor .segmented-btn.active {
+  background: #FF66C4;
+}
+
 .stepper-group {
   display: flex;
   align-items: center;
@@ -292,13 +303,32 @@ h1 {
 
 /* Status / key display */
 .status-panel {
-  padding: 16px 20px 0;
+  padding: 10px 12px 0;
   background: #000000;
   color: #ffffff;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   border-bottom: 4px solid #ffffff;
+}
+
+@media (max-width: 480px) {
+  .status-panel {
+    width: 364px;
+    max-width: 100%;
+    height: 100px;
+    margin: 0 auto;
+    justify-content: center;
+    gap: 13px;
+  }
+
+  .key-big {
+    font-size: 34px;
+  }
+
+  .audio-bars {
+    height: 24px;
+  }
 }
 
 .status-row {
@@ -378,8 +408,25 @@ h1 {
   }
 }
 
-.audio-bars.stopped {
+.audio-bars.stopped,
+.audio-bars.fading,
+.audio-bars.loading {
   justify-content: center;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 3px solid rgba(56, 182, 255, 0.25);
+  border-top-color: #38B6FF;
+  animation: spinner-rotate 0.7s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .stop-indicator {
@@ -545,8 +592,8 @@ h1 {
 .pads-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-  padding: 20px;
+  gap: 8px;
+  padding: 12px;
   background: #18181b;
 }
 
@@ -558,7 +605,10 @@ h1 {
 
 .pad-btn {
   position: relative;
-  aspect-ratio: 1 / 1;
+  width: 60px;
+  height: 60px;
+  justify-self: center;
+  align-self: center;
   border: 3px solid #ffffff;
   border-radius: 14px;
   box-shadow: 5px 5px 0px #ffffff;
@@ -592,7 +642,7 @@ h1 {
 }
 
 .pad-note {
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 900;
   line-height: 1;
   color: #ffffff;
@@ -600,9 +650,9 @@ h1 {
 
 .pad-tag {
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: 9px;
   font-weight: 800;
-  margin-top: 6px;
+  margin-top: 4px;
   opacity: 0.75;
   color: #ffffff;
   text-transform: uppercase;
@@ -675,8 +725,8 @@ h1 {
 /* ---------- Cache deck ---------- */
 .cache-section {
   display: grid;
-  gap: 10px;
-  padding: 20px;
+  gap: 6px;
+  padding: 12px;
 }
 
 .cache-btn {

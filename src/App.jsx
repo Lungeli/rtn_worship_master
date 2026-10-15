@@ -176,7 +176,7 @@ export default function App() {
             )}
 
             <div className="key-controls">
-              <div className="segmented-control">
+              <div className={`segmented-control ${quality === 'Minor' ? 'minor' : ''}`}>
                 {QUALITIES.map((q) => (
                   <button
                     key={q}
@@ -218,8 +218,14 @@ export default function App() {
               <span className="key-big">{keyLabel}</span>
               <span className="quality-sub">{statusLabel}</span>
             </div>
-            <div className={`audio-bars ${isLive ? 'live' : ''} ${showStopped ? 'stopped' : ''}`}>
-              {showStopped ? (
+            <div
+              className={`audio-bars ${isLive ? 'live' : ''} ${
+                engine.pendingKey ? 'loading' : ''
+              } ${showStopped ? 'stopped' : ''} ${engine.fadingOut ? 'fading' : ''}`}
+            >
+              {engine.pendingKey ? (
+                <span className="loading-spinner" aria-hidden="true" />
+              ) : showStopped || engine.fadingOut ? (
                 <span className="stop-indicator" aria-hidden="true" />
               ) : (
                 <>
