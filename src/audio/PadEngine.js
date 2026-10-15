@@ -1,4 +1,4 @@
-import { CROSSFADE_SECONDS, FADE_OUT_SECONDS, VOLUME_STEP, padId, padUrl } from './keys.js'
+import { CROSSFADE_SECONDS, FADE_OUT_SECONDS, STOP_SECONDS, VOLUME_STEP, padId, padUrl } from './keys.js'
 
 function powerCurve(from, to) {
   const curve = new Float32Array(64)
@@ -177,15 +177,28 @@ class PadEngine {
     this.#patch({ fadingOut: false, currentKey: null, pendingKey: null })
   }
 
-  stop() {
+  async stop() {
     if (!this.state.ready) return
-    this.transitionId += 1
+    const id = ++this.transitionId
+    const playing = this.slots.some((slot) => slot.source)
+    this.#patch({ fadingOut: false, pendingKey: null, error: '' })
+
+    if (playing) {
+      const duration = STOP_SECONDS
+      const now = this.ctx.currentTime
+      this.fadeGain.gain.cancelScheduledValues(now)
+      this.fadeGain.gain.setValueAtTime(this.fadeGain.gain.value, now)
+      this.fadeGain.gain.linearRampToValueAtTime(0, now + duration)
+      await new Promise((resolve) => window.setTimeout(resolve, duration * 1000))
+      if (id !== this.transitionId) return
+    }
+
     this.slots.forEach((_, index) => this.#stopSlot(index))
     if (this.fadeGain && this.ctx) {
       this.fadeGain.gain.cancelScheduledValues(this.ctx.currentTime)
       this.fadeGain.gain.setValueAtTime(1, this.ctx.currentTime)
     }
-    this.#patch({ fadingOut: false, currentKey: null, pendingKey: null, error: '' })
+    this.#patch({ currentKey: null, pendingKey: null })
   }
 
   async #load(url) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { padEngine } from './audio/PadEngine.js'
 import { CROSSFADE_SECONDS, NOTES, allPadUrls, padId } from './audio/keys.js'
 import { cachedPadCount, prefetchPads } from './lib/cachePads.js'
@@ -13,6 +13,8 @@ export default function App() {
   const [quality, setQuality] = useState('Major')
   const [installPrompt, setInstallPrompt] = useState(null)
   const [installed, setInstalled] = useState(false)
+  const [justStopped, setJustStopped] = useState(false)
+  const wasActiveRef = useRef(false)
   const [cache, setCache] = useState({
     busy: false,
     cached: 0,
@@ -30,6 +32,16 @@ export default function App() {
     if (!engine.ready) return undefined
     return bindWakeLockResume()
   }, [engine.ready])
+
+  useEffect(() => {
+    const isActiveNow = Boolean(engine.currentKey) || engine.fadingOut || Boolean(engine.pendingKey)
+    if (wasActiveRef.current && !isActiveNow) {
+      setJustStopped(true)
+    } else if (isActiveNow) {
+      setJustStopped(false)
+    }
+    wasActiveRef.current = isActiveNow
+  }, [engine.currentKey, engine.fadingOut, engine.pendingKey])
 
   useEffect(() => {
     function onBeforeInstallPrompt(event) {
@@ -94,17 +106,25 @@ export default function App() {
     return { mode, note: NOTES.find((item) => item.id === noteId) }
   }, [engine.currentKey])
 
-  const statusLabel = engine.fadingOut
-    ? 'FADING OUT'
-    : activeNote
-      ? `${activeNote.mode.toUpperCase()} PAD SUSTAIN`
-      : 'IDLE'
+  const keyLabel = activeNote?.note?.label ? `'${activeNote.note.label}'` : '—'
+  const statusLabel = 'Sustain Pad'
 
   const isLive = Boolean(activeNote) && !engine.fadingOut
-  const readoutState = engine.fadingOut ? 'FADING OUT' : activeNote ? 'PLAYING' : engine.pendingKey ? 'LOADING' : 'STANDBY'
-  const readoutKey = activeNote
-    ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}`
-    : 'NO KEY SELECTED'
+  const showStopped = justStopped && !activeNote && !engine.pendingKey && !engine.fadingOut
+  const readoutState = showStopped
+    ? 'STOPPED'
+    : engine.fadingOut
+      ? 'FADING OUT'
+      : activeNote
+        ? 'PLAYING'
+        : engine.pendingKey
+          ? 'LOADING'
+          : 'STANDBY'
+  const readoutKey = showStopped
+    ? 'SUSTAIN PAD'
+    : activeNote
+      ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}`
+      : 'NO KEY SELECTED'
 
   const marquee = `RTN WORSHIP MASTER // ACTIVE KEY: ${
     activeNote ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}` : 'NONE'
@@ -195,19 +215,29 @@ export default function App() {
         <div className="status-panel">
           <div className="status-row">
             <div className="active-key-display">
-              <span className="key-big">{activeNote?.note?.label ?? '—'}</span>
+              <span className="key-big">{keyLabel}</span>
               <span className="quality-sub">{statusLabel}</span>
             </div>
-            <div className={`audio-bars ${isLive ? 'live' : ''}`}>
-              <div className="bar" />
-              <div className="bar" />
-              <div className="bar" />
-              <div className="bar" />
-              <div className="bar" />
+            <div className={`audio-bars ${isLive ? 'live' : ''} ${showStopped ? 'stopped' : ''}`}>
+              {showStopped ? (
+                <span className="stop-indicator" aria-hidden="true" />
+              ) : (
+                <>
+                  <div className="bar" />
+                  <div className="bar" />
+                  <div className="bar" />
+                  <div className="bar" />
+                  <div className="bar" />
+                </>
+              )}
             </div>
           </div>
 
-          <div className={`status-readout ${isLive ? 'live' : ''}`}>
+          <div
+            className={`status-readout ${isLive ? 'live' : ''} ${
+              engine.fadingOut || showStopped ? 'fading' : ''
+            }`}
+          >
             <span className="readout-dot" aria-hidden="true" />
             <span className="readout-text">
               {readoutKey} <em>{readoutState}</em>
@@ -246,7 +276,10 @@ export default function App() {
           <button
             type="button"
             className="transport-btn stop"
-            onClick={() => padEngine.stop()}
+            onClick={() => {
+              padEngine.stop()
+              setJustStopped(true)
+            }}
             disabled={!engine.currentKey && !engine.pendingKey && !engine.fadingOut}
           >
             Stop
@@ -263,7 +296,29 @@ export default function App() {
 
       <section className="cache-section brutalist-deck">
         <button type="button" className="transport-btn cache-btn" onClick={cacheOffline} disabled={cache.busy}>
-          {cache.busy ? cache.message : 'Cache 14 Pads Offline'}
+          {cache.busy ? (
+            cache.message
+          ) : (
+            <>
+              <svg
+                className="btn-icon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M12 3v11" />
+                <path d="M7 10l5 5 5-5" />
+                <path d="M4 20h16" />
+              </svg>
+              Cache 14 Pads Offline
+            </>
+          )}
         </button>
         {cache.message && !cache.busy && <p className="cache-note">{cache.message}</p>}
         {engine.error && <p className="error">{engine.error}</p>}

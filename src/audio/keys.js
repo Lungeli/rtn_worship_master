@@ -12,7 +12,8 @@ export const MODES = ['major', 'minor']
 
 // Fixed, non-configurable transition timings — no UI exposes these.
 export const CROSSFADE_SECONDS = 2.0
-export const FADE_OUT_SECONDS = 5.0
+export const FADE_OUT_SECONDS = 8.0
+export const STOP_SECONDS = 0.5
 export const VOLUME_STEP = 0.05
 export const AUDIO_CACHE = 'rtn-worship-pads-v1'
 
