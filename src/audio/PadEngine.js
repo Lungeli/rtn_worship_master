@@ -1,14 +1,4 @@
-import {
-  DEFAULT_CROSSFADE,
-  MAX_CROSSFADE,
-  MIN_CROSSFADE,
-  VOLUME_STEP,
-  equalPowerCurves,
-  padId,
-  padUrl,
-} from './keys.js'
-
-const { fadeOut } = equalPowerCurves()
+import { CROSSFADE_SECONDS, FADE_OUT_SECONDS, VOLUME_STEP, padId, padUrl } from './keys.js'
 
 function powerCurve(from, to) {
   const curve = new Float32Array(64)
@@ -45,7 +35,6 @@ class PadEngine {
       currentKey: null,
       pendingKey: null,
       volume: 0.85,
-      crossfade: DEFAULT_CROSSFADE,
       fadingOut: false,
       error: '',
     }
@@ -87,12 +76,6 @@ class PadEngine {
     }
   }
 
-  setCrossfade(seconds) {
-    this.#patch({
-      crossfade: clamp(Number(seconds) || DEFAULT_CROSSFADE, MIN_CROSSFADE, MAX_CROSSFADE),
-    })
-  }
-
   setVolume(value) {
     const volume = clamp(value, 0, 1)
     if (this.master && this.ctx) {
@@ -132,7 +115,7 @@ class PadEngine {
       this.#startSlot(nextIndex, buffer, key)
 
       const now = this.ctx.currentTime
-      const duration = this.state.crossfade
+      const duration = CROSSFADE_SECONDS
       const current = this.slots[this.activeSlot]
       const next = this.slots[nextIndex]
 
@@ -179,11 +162,11 @@ class PadEngine {
       return
     }
 
-    const duration = this.state.crossfade
+    const duration = FADE_OUT_SECONDS
     const now = this.ctx.currentTime
     this.fadeGain.gain.cancelScheduledValues(now)
-    this.fadeGain.gain.setValueAtTime(Math.max(this.fadeGain.gain.value, 0.0001), now)
-    this.fadeGain.gain.setValueCurveAtTime(fadeOut, now, duration)
+    this.fadeGain.gain.setValueAtTime(this.fadeGain.gain.value, now)
+    this.fadeGain.gain.linearRampToValueAtTime(0, now + duration)
 
     await new Promise((resolve) => window.setTimeout(resolve, duration * 1000))
     if (id !== this.transitionId) return
@@ -274,6 +257,7 @@ class PadEngine {
       } catch {
         /* already stopped */
       }
+      source.disconnect()
     }
     if (slot.gain) slot.gain.disconnect()
     this.slots[index] = this.#emptySlot()
