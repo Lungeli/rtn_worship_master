@@ -122,7 +122,7 @@ h1 {
   background: #000000;
   color: #FFDE59;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 1.5px;
   padding: 8px 0;
@@ -171,8 +171,8 @@ h1 {
 }
 
 .brand-logo {
-  width: 38px;
-  height: 38px;
+  width: 50px;
+  height: 50px;
   border-radius: 8px;
   background: #ffffff;
   object-fit: contain;
@@ -419,7 +419,7 @@ h1 {
   height: 20px;
   border-radius: 50%;
   border: 3px solid rgba(56, 182, 255, 0.25);
-  border-top-color: #38B6FF;
+  border-top-color: #7ED957;
   animation: spinner-rotate 0.7s linear infinite;
 }
 
@@ -605,8 +605,8 @@ h1 {
 
 .pad-btn {
   position: relative;
-  width: 60px;
-  height: 60px;
+  width: 70px;
+  height: 70px;
   justify-self: center;
   align-self: center;
   border: 3px solid #ffffff;
@@ -642,7 +642,7 @@ h1 {
 }
 
 .pad-note {
-  font-size: 20px;
+  font-size: 23px;
   font-weight: 900;
   line-height: 1;
   color: #ffffff;
@@ -650,7 +650,7 @@ h1 {
 
 .pad-tag {
   font-family: var(--mono);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 800;
   margin-top: 4px;
   opacity: 0.75;
