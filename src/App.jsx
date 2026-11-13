@@ -106,7 +106,15 @@ export default function App() {
     return { mode, note: NOTES.find((item) => item.id === noteId) }
   }, [engine.currentKey])
 
-  const keyLabel = activeNote?.note?.label ? `'${activeNote.note.label}'` : '—'
+  const pendingNote = useMemo(() => {
+    if (!engine.pendingKey) return null
+    const [mode, noteId] = engine.pendingKey.split(':')
+    return { mode, note: NOTES.find((item) => item.id === noteId) }
+  }, [engine.pendingKey])
+
+  const isSwitching = Boolean(pendingNote) && Boolean(activeNote)
+  const displayNote = isSwitching ? pendingNote : activeNote
+  const keyLabel = displayNote?.note?.label ? `'${displayNote.note.label}'` : '—'
   const statusLabel = 'Sustain Pad'
 
   const isLive = Boolean(activeNote) && !engine.fadingOut
@@ -115,16 +123,20 @@ export default function App() {
     ? 'STOPPED'
     : engine.fadingOut
       ? 'FADING OUT'
-      : activeNote
-        ? 'PLAYING'
-        : engine.pendingKey
-          ? 'LOADING'
+      : pendingNote
+        ? isSwitching
+          ? 'SWITCHING'
+          : 'LOADING'
+        : activeNote
+          ? 'PLAYING'
           : 'STANDBY'
   const readoutKey = showStopped
     ? 'SUSTAIN PAD'
-    : activeNote
-      ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}`
-      : 'NO KEY SELECTED'
+    : pendingNote
+      ? `${pendingNote.note?.label ?? ''} ${pendingNote.mode.toUpperCase()}`
+      : activeNote
+        ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}`
+        : 'NO KEY SELECTED'
 
   const marquee = `RTN WORSHIP MASTER // ACTIVE KEY: ${
     activeNote ? `${activeNote.note?.label ?? ''} ${activeNote.mode.toUpperCase()}` : 'NONE'
